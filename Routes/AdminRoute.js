@@ -26,17 +26,17 @@ router.post("/adminlogin", (req, res) => {
   });
 });
 
-router.get('/category', (req, res) => {
-    const sql = "SELECT * FROM category";
+router.get('/department', (req, res) => {
+    const sql = "SELECT * FROM department";
     con.query(sql, (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"})
         return res.json({Status: true, Result: result})
     })
 })
 
-router.post('/add_category', (req, res) => {
-    const sql = "INSERT INTO category (`name`) VALUES (?)"
-    con.query(sql, [req.body.category], (err, result) => {
+router.post('/add_department', (req, res) => {
+    const sql = "INSERT INTO department (`name`) VALUES (?)"
+    con.query(sql, [req.body.department], (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"})
         return res.json({Status: true})
     })
@@ -55,10 +55,9 @@ const upload = multer({
     storage: storage
 })
 // end imag eupload
-
-router.post('/add_employee',upload.single('image'), (req, res) => {
-    const sql = `INSERT INTO employee
-    (name,email,password, address, salary,image, category_id)
+router.post('/add_teacher',upload.single('image'), (req, res) => {
+    const sql = `INSERT INTO teacher
+    (name,email,password, department_id)
     VALUES (?)`;
     bcrypt.hash(req.body.password, 10, (err, hash) => {
         if(err) return res.json({Status: false, Error: "Query Error"})
@@ -66,10 +65,7 @@ router.post('/add_employee',upload.single('image'), (req, res) => {
             req.body.name,
             req.body.email,
             hash,
-            req.body.address,
-            req.body.salary,
-            req.file.filename,
-            req.body.category_id
+            req.body.department_id
         ]
         con.query(sql, [values], (err, result) => {
             if(err) return res.json({Status: false, Error: err})
@@ -78,34 +74,32 @@ router.post('/add_employee',upload.single('image'), (req, res) => {
     })
 })
 
-router.get('/employee', (req, res) => {
-    const sql = "SELECT * FROM employee";
+router.get('/teacher', (req, res) => {
+    const sql = "SELECT * FROM teacher";
     con.query(sql, (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"})
         return res.json({Status: true, Result: result})
     })
 })
 
-router.get('/employee/:id', (req, res) => {
+router.get('/teacher/:id', (req, res) => {
     const id = req.params.id;
-    const sql = "SELECT * FROM employee WHERE id = ?";
+    const sql = "SELECT * FROM teacher WHERE id = ?";
     con.query(sql,[id], (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"})
         return res.json({Status: true, Result: result})
     })
 })
 
-router.put('/edit_employee/:id', (req, res) => {
+router.put('/edit_teacher/:id', (req, res) => {
     const id = req.params.id;
-    const sql = `UPDATE employee
-        set name = ?, email = ?, salary = ?, address = ?, category_id = ?
+    const sql = `UPDATE teacher
+        set name = ?, department_id = ?
         Where id = ?`
     const values = [
         req.body.name,
         req.body.email,
-        req.body.salary,
-        req.body.address,
-        req.body.category_id
+        req.body.department_id
     ]
     con.query(sql,[...values, id], (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"+err})
@@ -113,9 +107,77 @@ router.put('/edit_employee/:id', (req, res) => {
     })
 })
 
-router.delete('/delete_employee/:id', (req, res) => {
+router.get('/admin_count', (req, res) => {
+    const sql = "select count(id) as admin from admin";
+    con.query(sql, (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.get('/teacher_count', (req, res) => {
+    const sql = "select count(id) as teacher from teacher";
+    con.query(sql, (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.post('/add_student',upload.single('image'), (req, res) => {
+    const sql = `INSERT INTO student
+    (name,email,password, department_id)
+    VALUES (?)`;
+    bcrypt.hash(req.body.password, 10, (err, hash) => {
+        if(err) return res.json({Status: false, Error: "Query Error"})
+        const values = [
+            req.body.name,
+            req.body.email,
+            hash,
+            req.body.department_id
+        ]
+        con.query(sql, [values], (err, result) => {
+            if(err) return res.json({Status: false, Error: err})
+            return res.json({Status: true})
+        })
+    })
+})
+
+router.get('/student', (req, res) => {
+    const sql = "SELECT * FROM student";
+    con.query(sql, (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.get('/student/:id', (req, res) => {
     const id = req.params.id;
-    const sql = "delete from employee where id = ?"
+    const sql = "SELECT * FROM student WHERE id = ?";
+    con.query(sql,[id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.put('/edit_student/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = `UPDATE student
+        set name = ?, email = ?, department_id = ?
+        Where id = ?`
+    const values = [
+        req.body.name,
+        req.body.email,
+        req.body.department_id
+    ]
+    con.query(sql,[...values, id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.delete('/delete_student/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "delete from student where id = ?"
     con.query(sql,[id], (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"+err})
         return res.json({Status: true, Result: result})
@@ -130,16 +192,49 @@ router.get('/admin_count', (req, res) => {
     })
 })
 
-router.get('/employee_count', (req, res) => {
-    const sql = "select count(id) as employee from employee";
+router.get('/student_count', (req, res) => {
+    const sql = "select count(id) as student from student";
     con.query(sql, (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"+err})
         return res.json({Status: true, Result: result})
     })
 })
 
-router.get('/salary_count', (req, res) => {
-    const sql = "select sum(salary) as salaryOFEmp from employee";
+router.get('/logout', (req, res) => {
+    res.clearCookie('token')
+    return res.json({Status: true})
+})
+
+router.post('/add_teacher',upload.single('image'), (req, res) => {
+    const sql = `INSERT INTO teacher
+    (name,email,password, department_id)
+    VALUES (?)`;
+    bcrypt.hash(req.body.password, 10, (err, hash) => {
+        if(err) return res.json({Status: false, Error: "Query Error"})
+        const values = [
+            req.body.name,
+            req.body.email,
+            hash,
+            req.body.department_id
+        ]
+        con.query(sql, [values], (err, result) => {
+            if(err) return res.json({Status: false, Error: err})
+            return res.json({Status: true})
+        })
+    })
+})
+
+router.delete('/delete_teacher/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "delete from teacher where id = ?"
+    con.query(sql,[id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.get('/admin_count', (req, res) => {
+    const sql = "select count(id) as admin from admin";
     con.query(sql, (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"+err})
         return res.json({Status: true, Result: result})
@@ -154,10 +249,6 @@ router.get('/admin_records', (req, res) => {
     })
 })
 
-router.get('/logout', (req, res) => {
-    res.clearCookie('token')
-    return res.json({Status: true})
-})
-
 export { router as adminRouter };
+
 
