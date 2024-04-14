@@ -42,7 +42,6 @@ router.post('/add_department', (req, res) => {
     })
 })
 
-// image upload
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'Public/Images')
@@ -54,7 +53,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage
 })
-// end imag eupload
+
 router.post('/add_teacher',upload.single('image'), (req, res) => {
     const sql = `INSERT INTO teacher
     (name,email,password, department_id)
@@ -94,7 +93,7 @@ router.get('/teacher/:id', (req, res) => {
 router.put('/edit_teacher/:id', (req, res) => {
     const id = req.params.id;
     const sql = `UPDATE teacher
-        set name = ?, department_id = ?
+        set name = ?, email = ?, department_id = ?
         Where id = ?`
     const values = [
         req.body.name,
@@ -107,6 +106,29 @@ router.put('/edit_teacher/:id', (req, res) => {
     })
 })
 
+router.get('auth/admin/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = "SELECT email FROM admin WHERE admin_id = ?";
+    con.query(sql, [id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+      })
+    })
+
+  router.get('/auth/admin/:id', (req, res) => {
+    const id = req.params.id;
+  
+    const sql = "SELECT * FROM admin WHERE admin_id = ?";
+    con.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error("Error fetching admin:", err);
+        return res.status(500).json({ error: "Error fetching admin" });
+      }
+      res.json(result);
+    });
+  });
+
 router.get('/admin_count', (req, res) => {
     const sql = "select count(id) as admin from admin";
     con.query(sql, (err, result) => {
@@ -114,6 +136,7 @@ router.get('/admin_count', (req, res) => {
         return res.json({Status: true, Result: result})
     })
 })
+
 
 router.get('/teacher_count', (req, res) => {
     const sql = "select count(id) as teacher from teacher";
@@ -170,6 +193,30 @@ router.put('/edit_student/:id', (req, res) => {
         req.body.department_id
     ]
     con.query(sql,[...values, id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+router.put('/edit_department/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = `UPDATE department
+        set name = ?, email = ?, department_id = ?
+        Where id = ?`
+    const values = [
+        req.body.name
+    ]
+    con.query(sql,[...values, id], (err, result) => {
+        if(err) return res.json({Status: false, Error: "Query Error"+err})
+        return res.json({Status: true, Result: result})
+    })
+})
+
+
+router.delete('/delete_department/:id', (req, res) => {
+    const id = req.params.id;
+    const sql = "delete from department where id = ?"
+    con.query(sql,[id], (err, result) => {
         if(err) return res.json({Status: false, Error: "Query Error"+err})
         return res.json({Status: true, Result: result})
     })

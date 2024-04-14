@@ -153,14 +153,14 @@ app.post('/studentlogin', (req, res) => {
     })
 })
 
-// app.get('/student/:id', (req, res) => {
-//     const id = req.params.id;
-//     const sql = "SELECT * FROM student where id = ?";
-//     con.query(sql, [id], (err, result) => {
-//         if(err) return res.json({Error: "Get student error in sql"});
-//         return res.json({Status: "Success", Result: result})
-//     })
-// })
+app.get('/student/:id', (req, res) => {
+     const id = req.params.id;
+     const sql = "SELECT * FROM student where id = ?";
+     con.query(sql, [id], (err, result) => {
+         if(err) return res.json({Error: "Get student error in sql"});
+         return res.json({Status: "Success", Result: result})
+     })
+ })
 
 
 
